@@ -1,0 +1,16 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: net-ee
+  description: Network EE
+  tags:
+    - execution-environment
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+    backstage.io/managed-by-location: github.com?repo=net-ee&owner=NilashishC
+    ansible.io/scm-provider: Github
+    backstage.io/source-template: template:default/ansible-execution-environment-builder-network-automation
+spec:
+  type: execution-environment
+  owner: user:default/admin
+  lifecycle: production
