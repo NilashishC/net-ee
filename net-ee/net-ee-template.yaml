@@ -4,7 +4,7 @@ kind: Template
 metadata:
   name: ee
   title: ee
-  description: "EE:avs ee: 1:"
+  description: "EE "1" :"
   annotations:
     ansible.io/saved-template: 'true'
   tags: ["execution-environment"]
