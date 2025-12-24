@@ -2,9 +2,9 @@
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-  name: ee
-  title: ee
-  description: "EE 'a' '"
+  name: ee1
+  title: ee1
+  description: "'EE: ''a'' '' 1\nEE12:"ass"'''"
   annotations:
     ansible.io/saved-template: 'true'
   tags: ["execution-environment"]
