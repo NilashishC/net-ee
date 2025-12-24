@@ -2,9 +2,11 @@
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-  name: ee1
-  title: ee1
-  description: "'EE: ''a'' '' 1\nEE12:"ass"'''"
+  name: ee
+  title: ee
+  description: >-
+  EE description with "double quotes" and 'single quotes' with : and other new
+  chars
   annotations:
     ansible.io/saved-template: 'true'
   tags: ["execution-environment"]
@@ -86,7 +88,7 @@ spec:
         collections:
           title: Ansible Collections
           type: array
-          default: []
+          default: [{"name":"amazon.aws"},{"name":"amazon.ai"},{"name":"azure.azcollection"},{"name":"google.cloud"}]
           description: Add collections manually
           items:
             type: object
