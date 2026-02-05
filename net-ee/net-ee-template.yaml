@@ -2,12 +2,14 @@
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-  name: ee
-  title: ee
-  description: "EE description with \"double quotes\" and 'single quotes' with : and other new   chars"
-  annotations:
-    ansible.io/saved-template: 'true'
-  tags: ["execution-environment"]
+  name: ansible-execution-environment-builder-cloud-automation
+  title: Cloud Automation
+  description: Create Ansible Execution Environment definition file with essential collections for cloud automation.
+  tags:
+    - ansible
+    - execution-environment
+    - automation
+    - cloud-automation
 spec:
   type: execution-environment
 
@@ -25,11 +27,13 @@ spec:
             - 'registry.redhat.io/ansible-automation-platform/ee-minimal-rhel9:2.18'
             - 'registry.redhat.io/ansible-automation-platform/ee-minimal-rhel8:2.16'
             - 'registry.redhat.io/ansible-automation-platform/ee-minimal-rhel9:2.16'
+            - 'custom'
           enumNames:
             - 'Red Hat Ansible Minimal EE - Ansible Core 2.18 (RHEL 8)'
             - 'Red Hat Ansible Minimal EE - Ansible Core 2.18 (RHEL 9)'
             - 'Red Hat Ansible Minimal EE - Ansible Core 2.16 (RHEL 8)'
             - 'Red Hat Ansible Minimal EE - Ansible Core 2.16 (RHEL 9)'
+            - 'Custom Image'
           ui:field: BaseImagePicker
       dependencies:
         baseImage:
@@ -64,21 +68,16 @@ spec:
         popularCollections:
           title: Add Popular Collections
           type: array
+          default: ["amazon.aws", "amazon.ai", "azure.azcollection", "google.cloud"]
           items:
             type: string
             enum:
-              - 'community.general'
-              - 'ansible.posix'
-              - 'ansible.windows'
-              - 'ansible.utils'
               - 'amazon.aws'
+              - 'amazon.ai'
               - 'azure.azcollection'
               - 'google.cloud'
-              - 'amazon.ai'
-              - 'cisco.ios'
-              - 'cisco.nxos'
-              - 'arista.eos'
-              - 'cisco.iosxr'
+              - 'ansible.utils'
+              - 'community.general'
           uniqueItems: true
           ui:widget: checkboxes
           ui:options:
@@ -86,7 +85,6 @@ spec:
         collections:
           title: Ansible Collections
           type: array
-          default: []
           description: Add collections manually
           items:
             type: object
@@ -94,25 +92,23 @@ spec:
               name:
                 type: string
                 title: Collection Name
-                description: The name or source of the collection.
-                ui:placeholder: 'e.g., amazon.aws, https://github.com/ansible-collections/cisco.ios'
+                description: The name of the collection or an URL to a Git repository containing the collection. For example, 'amazon.aws', 'https://github.com/ansible-collections/cisco.ios.git'.
               version:
                 type: string
                 title: Version (Optional)
                 description: |
-                  The version of the collection to install.
+                  The version of the collection to install (e.g., 7.2.1).
                   If not specified, the latest version will be installed.
-                ui:placeholder: 'e.g., 7.2.1'
               source:
                 type: string
                 title: Source (Optional)
                 description: |
-                  The Galaxy URL to pull the collection from.
+                  The Automation Hub or Galaxy server URL to pull the collection from. For example, https://galaxy.ansible.com.
                   If type is 'file', 'dir', or 'subdirs', this should be a local path to the collection.
               type:
                 type: string
                 title: Type (Optional)
-                description: Determines the source of the collection.
+                description: Determines the source type of the collection. If type is omitted, the name is used to implicitly determine the source of the collection.
                 enum:
                   - 'file'
                   - 'galaxy'
@@ -132,11 +128,13 @@ spec:
                   description: URI of the signature file
           ui:field: CollectionsPicker
         collectionsFile:
-          title: Upload a requirements.yml file
+          title: Add collections YAML
           description: Optionally upload a requirements file with collection details
           type: string
           format: data-url
           ui:field: FileUploadPicker
+          ui:placeholder: Paste the full content of your requirements.yml file here. Alternativly, upload YAML file. Please verify formatting, as no syntax validation is applied.
+          ui:buttonText: Upload YAML file
         specifyRequirements:
           title: Specify additional Python requirements and System packages
           type: boolean
@@ -151,7 +149,6 @@ spec:
                 pythonRequirements:
                   title: Additional Python Requirements
                   type: array
-                  default: []
                   description: |
                     Specify additional python packages that are required in addition to what the selected collections already specify as dependencies.
                     Packages already specified in the collections as a dependency should not be repeated here.
@@ -164,13 +161,14 @@ spec:
                 pythonRequirementsFile:
                   type: string
                   format: data-url
-                  title: Pick a file with Python requirements
+                  title: Add Python requirements TXT
                   description: Upload a requirements.txt file with python package details
                   ui:field: FileUploadPicker
+                  ui:placeholder: Paste the full content of your requirements.txt file here. Alternativly, upload TXT file. Please verify formatting, as no syntax validation is applied.
+                  ui:buttonText: Upload requirements.txt file
                 systemPackages:
                   title: Additional System Packages
                   type: array
-                  default: []
                   description: |
                     Specify additional system-level packages that are required in addition to what the selected collections already specify as dependencies.
                     Packages already specified in the collections as a dependency should not be repeated here.
@@ -183,9 +181,11 @@ spec:
                 systemPackagesFile:
                   type: string
                   format: data-url
-                  title: Pick a file with system packages
+                  title: Add system packages TXT
                   description: Upload a bindep.txt file with system package details
                   ui:field: FileUploadPicker
+                  ui:placeholder: Paste the full content of your bindep.txt file here. Alternativly, upload TXT file. Please verify formatting, as no syntax validation is applied.
+                  ui:buttonText: Upload TXT file
             - properties:
                 specifyRequirements:
                   const: false
@@ -197,7 +197,6 @@ spec:
         mcpServers:
           title: MCP Servers
           type: array
-          default: []
           items:
             type: string
             title: MCP Server
@@ -224,7 +223,6 @@ spec:
         additionalBuildSteps:
           title: Additional Build Steps
           type: array
-          default: [{"stepType":"prepend_base","commands":["COPY _build/configs/ansible.cfg /etc/ansible/ansible.cfg"]},{"stepType":"append_final","commands":["RUN rm -f /etc/ansible/ansible.cfg"]}]
           items:
             type: object
             properties:
@@ -265,28 +263,28 @@ spec:
       description: Generate and publish the EE definition file and template.
       properties:
         eeFileName:
-          title: EE File Name
+          title: EE Definition Name
           type: string
-          description: Name of the Execution Environment file.
           ui:field: EEFileNamePicker
-          ui:help: "Specify the filename for the Execution Environment definition file."
+          ui:help: "Specify a name for the Execution Environment definition. This will also be used as the name of the EE definition file."
         templateDescription:
           title: Description
           type: string
           description: |
             Description for the generated Execution Environment definition.
             This description is used when displaying the Execution Environment definition in the catalog.
-            Additionally, this description is also used in the Software Template that is generated with SCM-based publishing.
+            Additionally, this description is also used in the Software Template that is generated with Git-based publishing.
         tags:
           title: Tags
           description: |
-            Add tags to make this EE definition discoverable in the catalog.
-            The default execution-environment tag identifies this as an EE component; keeping it is highly recommended
+            Add tags to make this EE definition discoverable in the catalog. Tags must be 63 characters or less and can only contain lowercase letters, numbers, and hyphens.
+            The default execution-environment tag identifies this as an EE component; keeping it is highly recommended.
           type: array
           default:
             - 'execution-environment'
           items:
             type: string
+            pattern: '^(?=.{1,63}$)[a-z0-9+#]+(?:-[a-z0-9+#]+)*$'
           ui:
             options:
               addable: true
@@ -295,10 +293,10 @@ spec:
             help: "Add one or more tags for the generated template."
         publishToSCM:
           title: Publish to a Git repository
-          description: Publish the EE definition file and template to a Git repository.
+          description: Publish the generated files to a Git repository.
           type: boolean
           default: true
-          ui:help: "If unchecked, the EE definition file and template will not be pushed to a Git repository. Regardless of your selection, you will get a link to download the files locally."
+          ui:help: "If unchecked, the generated files will not be pushed to a Git repository. Regardless of your selection, you will get a link to download the files locally."
       required:
         - eeFileName
         - templateDescription
@@ -321,7 +319,7 @@ spec:
                 repositoryOwner:
                   title: Git repository organization or username
                   type: string
-                  description: The organization or username that owns the Git repository.
+                  description: The organization or username that owns the Git repository
                 repositoryName:
                   title: Repository Name
                   type: string
@@ -363,6 +361,9 @@ spec:
           systemPackagesFile: ${{ parameters.systemPackagesFile or [] }}
           mcpServers: ${{ parameters.mcpServers or [] }}
           additionalBuildSteps: ${{ parameters.additionalBuildSteps or [] }}
+          sourceControlProvider: ${{ parameters.sourceControlProvider }}
+          repositoryOwner: ${{ parameters.repositoryOwner }}
+          repositoryName: ${{ parameters.repositoryName }}
 
     # Step 3: Validate the SCM repository (optional)
     - id: prepare-publish
@@ -431,7 +432,7 @@ spec:
         title: ${{ steps['prepare-publish'].output.generatedTitle }}
         description: ${{ steps['prepare-publish'].output.generatedDescription }}
 
-    # Step 5: Publish generated files as a Gitlab Merge Request
+    # Step 6: Publish generated files as a Gitlab Merge Request
     - id: publish-gitlab-merge-request
       name: Publish generated files as a Gitlab Merge Request
       action: publish:gitlab:merge-request
@@ -452,9 +453,10 @@ spec:
 
   output:
     text:
-      - title: Next Steps
+      - title: Getting Started
         content: |
           ${{ steps['create-ee-definition'].output.readmeContent }}
+
     links:
       - title: ${{ parameters.sourceControlProvider }} Repository
         url: ${{ steps['prepare-publish'].output.generatedFullRepoUrl }}
@@ -467,7 +469,7 @@ spec:
         icon: github
 
       - title: GitLab Merge Request
-        url: ${{ steps['publish-gitlab-merge-request'].output.mergeRequestUrl  }}
+        url: ${{ steps['publish-gitlab-merge-request'].output.mergeRequestUrl	}}
         if: ${{ (parameters.publishToSCM) and (not steps['prepare-publish'].output.createNewRepo) and (parameters.sourceControlProvider == 'Gitlab') }}
 
       - title: View details in catalog
